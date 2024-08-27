@@ -1,0 +1,92 @@
+load_pretrained: True
+strict_load: True
+pretrained_path: "./pretrained/DCC_x4st39_Set14_2n8d32T_4_epoch=119_val_psnr=28.32.pth"
+
+loggers:
+  log_images: True
+
+network:
+  target: models.modle_sr28_New.DCC_st39  # Super_Resolution.bicubic_plusplus_main.bicubic_plusplus_main.
+  params:
+
+     upscale: 4
+     growth_rate: 2
+     num_blocks: 8
+     dim: 32
+
+
+trainer:
+  base_lr_rate: 5e-4
+  num_epochs: 1500
+  use_Y_channel_in_val: True
+  check_val_every_n_epoch: 20
+  lr_scheduler:
+    target: training.schedulers.KneeLRScheduler    #KneeLRScheduler   CosineAnnealingLR_Restart
+    params:
+      peak_lr: 5e-4
+      warmup_steps: 0
+      total_steps: 1000
+      min_lr: 5e-6
+#    optimizer: torch.optim.Adam([torch.zeros(3, 64, 3, 3)], lr=2e-4, weight_decay=0, betas=(0.9, 0.99))
+#    T_period: [155, 155, 155, 155, 155, 155]
+#    restarts: [155, 310, 465, 620, 775]
+#    weights: [1, 1, 1, 1, 1]
+#    eta_min: 1e-5
+#    last_epoch: -1
+
+degradation:
+  train:
+    blur: False
+    img_noise: False
+    kernel_noise: False
+    load_kernels_from_disc: False
+    kernel_path: [""]
+    ksize: 21
+    rate_iso: 1.0
+    sig_min: 0.2
+    sig_max: 2.6
+    img_noise_level: 0.2
+  val:
+    blur: False
+    img_noise: False
+    kernel_noise: False
+    load_kernels_from_disc: False
+    kernel_path: [""]
+    ksize: 21
+    rate_iso: 1.0
+    sig_min: 0.2
+    sig_max: 2.6
+    img_noise_level: 0.2
+
+data:
+  train:
+    lr_path: ["/FU2K_LR_bicubic/X4"]
+    hr_path: ["/FU2K/HR"]   ##64 ##288
+    augment: True
+    scale: 4
+    patch_cropsize: 288
+    pool_lr: True
+    pool_hr: True
+    is_train: True
+  val:
+    lr_path: ["\\benchmark\\Set14\\x4"]
+    hr_path: ["\\benchmark\\Set14\\GTmod12"]
+    augment: False
+    scale: 4
+    patch_cropsize: False
+    pool_lr: True
+    pool_hr: True
+    is_train: False
+
+loader:
+  train:
+    batch_size: 64
+    shuffle: False
+    num_workers: 8
+    pin_memory: False
+    persistent_workers: True
+  val:
+    batch_size: 1
+    shuffle: True
+    num_workers: 8
+    pin_memory: False
